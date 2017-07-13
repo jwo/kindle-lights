@@ -4,6 +4,8 @@ Kindle-Lights
 A React-Native app proof of concept that changes lights of a philips hue every 2
 seconds.
 
+![](screenshot.png)
+
 Getting Started
 ---------------
 
@@ -24,3 +26,4 @@ LICENSE
 ---------
 
 Copyright 2017, Jesse Wolgamott, all rights reserved.
+
