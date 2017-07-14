@@ -1,34 +1,19 @@
 import React from 'react';
-import { StyleSheet, Text, View, Button} from 'react-native';
-import colors from './colors';
-import timer from 'react-native-timer';
+import { ScrollView, StyleSheet, Text, View, Button} from 'react-native';
+import colorUtility from './colorUtility';
+import {flatColors,randomColor} from './flatColors';
+import Tile from './Tile';
+import styles from './Style';
+import NavTile from './NavTile';
+import ColorPicker from './ColorPicker';
+import Status from './Status';
+import RandomColors from './RandomColors';
+import { NativeRouter, Route, Link } from 'react-router-native'
 
-const flatColors = [
-  "1abc9c",
-  "16a085",
-  "f1c40f",
-  "f39c12",
-  "2ecc71",
-  "27ae60",
-  "e67e22",
-  "d35400",
-  "3498db",
-  "2980b9",
-  "e74c3c",
-  "c0392b",
-  "9b59b6",
-  "8e44ad",
-  "ecf0f1",
-  "bdc3c7",
-  "34495e",
-  "2c3e50",
-  "95a5a6",
-  "7f8c8d"
-]
 
-const randomColor = () => {
-  return flatColors[Math.floor(Math.random() * flatColors.length)]
-}
+const Home = () => (
+  <Text style={styles.header}>JWo Lights and Display contest</Text>
+)
 
 export default class App extends React.Component {
 
@@ -38,16 +23,16 @@ export default class App extends React.Component {
     this.state = {
       color: randomColor(),
       one: {
-        on: false,
-        bri: 200,
-        hue: 22222,
-        sat: 200,
+        on: 'unknown',
+        bri: -1,
+        hue: -1,
+        sat: -1,
       },
       two: {
-        on: false,
-        bri: 200,
-        hue: 22222,
-        sat: 200,
+        on: 'unknown',
+        bri: -1,
+        hue: -1,
+        sat: -1,
       }
     }
     this.fetchLights = this.fetchLights.bind(this);
@@ -66,17 +51,6 @@ export default class App extends React.Component {
     })
   }
 
-  componentWillUnmount() {
-    timer.clearTimeout(this);
-  }
-
-
-  componentDidMount(){
-    console.log("Mounted at " + (new Date()))
-    this.changeTo(this.state.color)
-    timer.setInterval( this, 'newColor', this.fetchNewColor, 5000)
-  }
-
   fetchNewColor(){
     const newColor = randomColor()
     this.changeTo(newColor)
@@ -88,7 +62,7 @@ export default class App extends React.Component {
     this.setState({
       color: rgbValue
     })
-    const xy = colors().getCIEColor(rgbValue)
+    const xy = colorUtility().getCIEColor(rgbValue)
     const lights = [1,2]
     lights.forEach((i) => {
       console.log("Sending to " + i)
@@ -117,62 +91,40 @@ export default class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>JWo Lights and Display contest</Text>
 
-        <View style={styles.row}>
-          <View style={styles.column}>
-            <Text style={{fontWeight: 'bold'}}>Light 1</Text>
 
-            <Text>On: {this.state.one.on}</Text>
-            <Text>bri: {this.state.one.bri}</Text>
-            <Text>hue: {this.state.one.hue}</Text>
-            <Text>sat: {this.state.one.sat}</Text>
 
+
+
+        <NativeRouter>
+          <View>
+          <Route exact path="/" component={Home}/>
+
+          <View style={styles.nav}>
+            <NavTile to="/" text="Home" color="#9b59b6"/>
+            <NavTile to="/colors" text="Color Picker" color="#c0392b"/>
+            <NavTile to="/random" text="Random" color="#f1c40f"/>
+            <NavTile to="/status" text="Status" color="#2980b9"/>
           </View>
-          <View style={styles.column}>
-            <Text style={{fontWeight: 'bold'}}>Light 2</Text>
-            <Text>On: {this.state.two.on}</Text>
-            <Text>bri: {this.state.two.bri}</Text>
-            <Text>hue: {this.state.two.hue}</Text>
-            <Text>sat: {this.state.two.sat}</Text>
+
+          <Route path="/colors" render={()=>(
+              <ColorPicker changeTo={this.changeTo}/>
+            )}
+          />
+
+          <Route path="/random" render={()=>(
+              <RandomColors fetchNewColor={this.fetchNewColor} color={this.state.color}/>
+            )}
+          />
+
+          <Route path="/status" render={()=>(
+              <Status fetchLights={this.fetchLights} one={this.state.one} two={this.state.two}/>
+            )}
+          />
           </View>
-        </View>
+        </NativeRouter>
 
-        <View style={{
-            height: 300,
-            width: 800,
-            borderWidth: 1,
-            borderColor: '#7f8c8d',
-            backgroundColor: `#${this.state.color}`
-          }}>
-          <Text style={styles.header}>{this.state.color}</Text>
-
-        </View>
-
-
-</View>
+      </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  header: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    margin: 30,
-    textAlign: 'center'
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  row: {
-    display: 'flex',
-    flexDirection: 'row'
-  },
-  column: {
-    padding: 20
-  }
-});
